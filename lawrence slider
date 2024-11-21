@@ -1,0 +1,113 @@
+"use client"
+import { MutableRefObject, useState } from "react";
+import ArrowIcon from "@/assets/icons/arrow-white.svg";
+import Link from "next/link";
+import Arrow from "@/assets/icons/arrow-right.svg";
+import { useJobStore } from "@/store/zustand";
+import { getCategory } from "@/helpers/get-category";
+import dynamic from "next/dynamic";
+import CustomSwiperSlide from "../swiper/custom-swiper-slide";
+import { SwiperType } from "@/types";
+const CustomSwiper = dynamic(() => import("../swiper/custom-swiper"), {
+    ssr: false,
+});
+
+interface IProps {
+    hoverColor?: string;
+    titleColor?: string;
+}
+
+function ShuffleApp({ hoverColor, titleColor }: IProps) {
+    const jobs = useJobStore().allJobs.map((elem, idx) => ({ ...elem, idx: `id${idx + 1}` }));
+    const [ref, setRef] = useState<MutableRefObject<SwiperType | null>>()
+    const [refSecond, setRefSecond] = useState<MutableRefObject<SwiperType | null>>()
+
+    const handleNext = () => {
+        ref?.current?.swiper?.slideNext();
+        refSecond?.current?.swiper?.slideNext();
+    };
+
+    const handlePrev = () => {
+        ref?.current?.swiper?.slidePrev();
+        refSecond?.current?.swiper?.slidePrev();
+    };
+
+    const getRef = (ref: MutableRefObject<SwiperType | null>) => {
+        setRef(ref)
+    }
+    const getRefSecond = (ref: MutableRefObject<SwiperType | null>) => {
+        setRefSecond(ref)
+    }
+    return (
+        <div className="relative overflow-hidden z-10">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-[14px]">
+                <CustomSwiper className="col-span-2" speed={800} getRef={getRef} view={{ mobile: 1, md: 1, laptop: 2, desktop: 2 }} space={14}>
+                    {jobs?.map((item, idx) => (
+                        <CustomSwiperSlide key={item.id} className="h-full">
+                            <div
+                                key={item.id}
+                            >
+                                <Link
+                                    href={`jobs/${item.url_slug}`}
+                                    key={idx}
+                                    className={`bg-grey-100 h-full ${hoverColor ? hoverColor : "hover:bg-green"
+                                        } group/item text-purple py-4 md:pb-[89px] md:pt-10 flex flex-col px-5 md:px-[35px] relative ${`role-${idx}`}`}
+                                >
+                                    <span className="text-2xl sm:text-3xl group-hover/item:underline">
+                                        {item.title}
+                                    </span>
+                                    <span className="text-xl py-[26px]">{item.salary_package}</span>
+                                    <div className="[&>p]:bg-grey-200 [&>p]:text-base [&>p]:w-max [&>p]:py-3 [&>p]:px-[26px] flex flex-wrap max-w-[350px] [&>p]:mr-[11px] [&>p]:mb-[10px]">
+                                        {getCategory("Job Type", jobs)?.map((type) => (
+                                            <p key={type.id}>{type.name}</p>
+                                        ))}
+                                    </div>
+                                    <div className="absolute cursor-pointer hidden bottom-0 right-0 bg-purple w-12 h-12 z-10 group-hover/item:flex justify-center items-center">
+                                        <ArrowIcon className="fill-white" />
+                                    </div>
+                                </Link>
+                            </div>
+                        </CustomSwiperSlide>
+                    ))}
+                </CustomSwiper>
+                <div className="flex gap-4 items-center justify-center lg:m-0">
+                    <div  onClick={handleNext} role="button" className={`bg-grey-700 ${titleColor ? "hover:bg-white" : "hover:bg-purple"} w-16 h-16 group/item flex rounded-full md:w-[90px] md:h-[90px] items-center justify-center cursor-pointer`}>
+                        <Arrow className={`fill-purple-light rotate-180 ${titleColor ? "group-hover/item:fill-purple" : "group-hover/item:fill-white"}`} />
+                    </div>
+                    <div  onClick={handlePrev} role="button"
+                        className={`bg-grey-700 ${titleColor ? "hover:bg-white" : "hover:bg-purple"}  w-16 h-16 group/item flex rounded-full md:w-[90px] md:h-[90px] items-center justify-center cursor-pointer`}>
+                        <Arrow className={`fill-purple-light ${titleColor ? "group-hover/item:fill-purple" : "group-hover/item:fill-white"}`} />
+                    </div>
+                </div>
+            </div>
+            <CustomSwiper speed={800} getRef={getRefSecond} view={{ mobile: 1, md: 1, laptop: 3, desktop: 3 }} space={14}>
+                {jobs?.map((item, idx) => (
+                    <CustomSwiperSlide key={item.id} className="h-full">
+                        <div>
+                            <Link
+                                href={`jobs/${item.url_slug}`}
+                                key={idx}
+                                className={`bg-grey-100 h-full ${hoverColor ? hoverColor : "hover:bg-green"
+                                    } group/item text-purple py-4 md:pb-[89px] md:pt-10 flex flex-col px-5 md:px-[35px] relative ${`role-${idx}`}`}
+                            >
+                                <span className="text-2xl sm:text-3xl group-hover/item:underline">
+                                    {item.title}
+                                </span>
+                                <span className="text-xl py-[26px]">{item.salary_package}</span>
+                                <div className="[&>p]:bg-grey-200 [&>p]:text-base [&>p]:w-max [&>p]:py-3 [&>p]:px-[26px] flex flex-wrap max-w-[350px] [&>p]:mr-[11px] [&>p]:mb-[10px]">
+                                    {getCategory("Job Type", jobs)?.map((type) => (
+                                        <p key={type.id}>{type.name}</p>
+                                    ))}
+                                </div>
+                                <div className="absolute cursor-pointer hidden bottom-0 right-0 bg-purple w-12 h-12 z-10 group-hover/item:flex justify-center items-center">
+                                    <ArrowIcon className="fill-white" />
+                                </div>
+                            </Link>
+                        </div>
+                    </CustomSwiperSlide>
+                ))}
+            </CustomSwiper>
+        </div >
+    );
+}
+export default ShuffleApp;
